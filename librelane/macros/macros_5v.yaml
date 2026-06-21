@@ -78,32 +78,71 @@ MACROS:
         location: [26, "expr::$DIE_AREA[3] - 169.25"]
         orientation: N
 
-  # 5V SRAM
-  gf180mcu_fd_ip_sram__sram512x8m8wm1:
+  # ── LSDL tapeout benchmark macros (Phase B: 64-bit adder pair) ──────────
+  # adder_tester: stock-9T go/no-go macro (LibreLane-hardened). Two instances:
+  # one per adder. Each adder sits ~100 um from its tester (equal distance, per
+  # the TST spec). cmos_adder64 = stock 9T (LibreLane-hardened); lsdl_adder64 =
+  # custom-site 11T LSDL (def2gds implant-healed GDS + generated abstract LEF).
+  adder_tester:
     gds:
-      - pdk_dir::libs.ref/gf180mcu_fd_ip_sram/gds/gf180mcu_fd_ip_sram__sram512x8m8wm1.gds
+      - dir::../ip/adder_tester/gds/adder_tester.gds
     lef:
-      - pdk_dir::libs.ref/gf180mcu_fd_ip_sram/lef/gf180mcu_fd_ip_sram__sram512x8m8wm1.lef
+      - dir::../ip/adder_tester/lef/adder_tester.lef
     vh:
-      - pdk_dir::libs.ref/gf180mcu_fd_ip_sram/verilog/gf180mcu_fd_ip_sram__sram512x8m8wm1__blackbox_pp.v
+      - dir::../ip/adder_tester/vh/adder_tester.v
     lib:
       "*_tt_025C_5v00":
-        - pdk_dir::libs.ref/gf180mcu_fd_ip_sram/lib/gf180mcu_fd_ip_sram__sram512x8m8wm1__tt_025C_5v00.lib
-      "*_ff_n40C_5v50":
-        - pdk_dir::libs.ref/gf180mcu_fd_ip_sram/lib/gf180mcu_fd_ip_sram__sram512x8m8wm1__ff_n40C_5v50.lib
+        - dir::../ip/adder_tester/lib/adder_tester__tt_025C_5v00.lib
       "*_ss_125C_4v50":
-        - pdk_dir::libs.ref/gf180mcu_fd_ip_sram/lib/gf180mcu_fd_ip_sram__sram512x8m8wm1__ss_125C_4v50.lib
+        - dir::../ip/adder_tester/lib/adder_tester__ss_125C_4v50.lib
+      "*_ff_n40C_5v50":
+        - dir::../ip/adder_tester/lib/adder_tester__ff_n40C_5v50.lib
     instances:
-      # Make sure to specify the SRAMs in pdn_cfg.tcl
-      i_chip_core.sram_0:
-        location: [490, 500]
+      i_chip_core.u_tester_lsdl:
+        location: [2200, 2700]
         orientation: N
-      i_chip_core.sram_1:
-        location: [970, 500]
-        orientation: E
+      i_chip_core.u_tester_cmos:
+        location: [1450, 1000]
+        orientation: N
 
-# This is an alternative method compared to
-# specifying the power connections in the RTL
+  lsdl_adder64:
+    gds:
+      - dir::../ip/lsdl_adder64/gds/lsdl_adder64.gds
+    lef:
+      - dir::../ip/lsdl_adder64/lef/lsdl_adder64.lef
+    vh:
+      - dir::../ip/lsdl_adder64/vh/lsdl_adder64.v
+    lib:
+      "*":
+        - dir::../ip/lsdl_adder64/lib/lsdl_adder64__tt_025C_5v00.lib
+    instances:
+      i_chip_core.u_lsdl_adder64:
+        location: [500, 2700]      # 1549 um; x[500,2049] y[2700,4249], in core
+        orientation: N
+
+  cmos_adder64:
+    gds:
+      - dir::../ip/cmos_adder64/gds/cmos_adder64.gds
+    lef:
+      - dir::../ip/cmos_adder64/lef/cmos_adder64.lef
+    vh:
+      - dir::../ip/cmos_adder64/vh/cmos_adder64.v
+    lib:
+      "*_tt_025C_5v00":
+        - dir::../ip/cmos_adder64/lib/cmos_adder64__tt_025C_5v00.lib
+      "*_ss_125C_4v50":
+        - dir::../ip/cmos_adder64/lib/cmos_adder64__ss_125C_4v50.lib
+      "*_ff_n40C_5v50":
+        - dir::../ip/cmos_adder64/lib/cmos_adder64__ff_n40C_5v50.lib
+    instances:
+      i_chip_core.u_cmos_adder64:
+        location: [500, 1000]      # 850 um; x[500,1350] y[1000,1850], in core
+        orientation: N
+
+# Macro PG mapping. LSDL macro PG pins are VPWR/VGND -> chip VDD/VSS;
+# stock-cell macros are already VDD/VSS.
 PDN_MACRO_CONNECTIONS:
-- "i_chip_core.sram_0 VDD VSS VDD VSS"
-- "i_chip_core.sram_1 VDD VSS VDD VSS"
+- "i_chip_core.u_tester_lsdl VDD VSS VDD VSS"
+- "i_chip_core.u_tester_cmos VDD VSS VDD VSS"
+- "i_chip_core.u_lsdl_adder64 VPWR VGND VDD VSS"
+- "i_chip_core.u_cmos_adder64 VDD VSS VDD VSS"

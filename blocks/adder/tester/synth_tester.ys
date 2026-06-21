@@ -1,0 +1,12 @@
+# synth_tester.ys — Yosys synthesis: adder_tester -> stock GF180 9T cells.
+# Liberty loaded first so hand-instantiated cells (Johnson divider dffq_4 /
+# inv_4) resolve as blackboxes and survive untouched.
+read_liberty -lib /soe/czeng14/software/pdk/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu9t5v0/lib/gf180mcu_fd_sc_mcu9t5v0__tt_025C_5v00.lib
+read_verilog adder_tester.v
+synth -top adder_tester
+dfflibmap -liberty /soe/czeng14/software/pdk/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu9t5v0/lib/gf180mcu_fd_sc_mcu9t5v0__tt_025C_5v00.lib
+# FSM paths have 6 cycles at 0.8 ns -> 4.8 ns delay budget (forces buffering)
+abc -D 4800 -liberty /soe/czeng14/software/pdk/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu9t5v0/lib/gf180mcu_fd_sc_mcu9t5v0__tt_025C_5v00.lib
+clean
+stat -liberty /soe/czeng14/software/pdk/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu9t5v0/lib/gf180mcu_fd_sc_mcu9t5v0__tt_025C_5v00.lib
+write_verilog -noattr tester_netlist.v

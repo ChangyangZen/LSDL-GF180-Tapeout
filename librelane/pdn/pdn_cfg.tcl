@@ -202,16 +202,10 @@ add_pdn_connect \
     -grid macro \
     -layers "$::env(PDN_VERTICAL_LAYER) $::env(PDN_HORIZONTAL_LAYER)"
 
-puts "$::env(SRAM_DEFINE)"
-if { [info exists ::env(SRAM_DEFINE)] } {
-    if {$::env(SRAM_DEFINE) == "SRAM_gf180mcu_ocd_ip_sram"} {
-        # Config for 3V3 SRAM
-        source [file join [file dirname [info script]] "pdn_3v3_sram.tcl"]
-    } else {
-        # Config for 5V SRAM
-        source [file join [file dirname [info script]] "pdn_5v_sram.tcl"]
-    }
-} else {
-    # Config for 5V SRAM
-    source [file join [file dirname [info script]] "pdn_5v_sram.tcl"]
-}
+# LSDL tapeout: no foundry SRAM macros. Our benchmark macros (adder_tester,
+# and later lsdl/cmos adder, mux, encoder) are covered by the generic
+# `-macro -default` grid above + PDN_MACRO_CONNECTIONS; they need no dedicated
+# per-instance PDN grid. The stock SRAM-specific PDN (pdn_5v_sram.tcl /
+# pdn_3v3_sram.tcl) referenced i_chip_core.sram_0/sram_1, which no longer
+# exist, so it is intentionally not sourced.
+puts "LSDL tapeout: SRAM-specific PDN disabled (no foundry SRAM macros)."

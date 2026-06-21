@@ -1,0 +1,6 @@
+#!/bin/sh
+# Minimal `pmap` stub for the GF180 KLayout DRC deck (gf180mcu.drc), which does
+# `pmap <pid> | tail -1`[10,40].strip purely to log memory usage. procps' real
+# pmap is absent in the LibreLane Nix image; without this the backtick returns
+# "" -> [10,40] is nil -> NoMethodError crashes the deck. Output is only logged.
+printf ' total %50s\n' '0K'

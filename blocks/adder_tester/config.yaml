@@ -1,0 +1,38 @@
+# LibreLane Classic-flow hardening of the adder_tester macro.
+# The tester RTL directly instantiates gf180mcu_fd_sc_mcu9t5v0 cells (Johnson
+# counter dffq_4 / inv_4), so it MUST be hardened at 9T. Run with:
+#   librelane blocks/adder_tester/config.yaml --pdk gf180mcuD \
+#     --pdk-root /workspace/gf180mcu --manual-pdk --scl gf180mcu_fd_sc_mcu9t5v0 \
+#     --save-views-to /design/blocks/adder_tester/views
+# Purpose: produce a DRC-clean, properly tapped/filled stock-cell macro GDS
+# (LibreLane does tapcell + filler + clean streamout automatically), replacing
+# the hand-streamed views that left 231 implant/well/dualgate markers.
+
+DESIGN_NAME: adder_tester
+
+VERILOG_FILES:
+- dir::src/adder_tester.v
+VERILOG_INCLUDE_DIRS:
+- dir::src
+
+PRIMARY_GDSII_STREAMOUT_TOOL: klayout
+
+# Clock: relaxed (the tester is internally divided /6 and timing was already
+# validated at 1.11 GHz in the hand flow). A slow macro clock makes setup
+# trivially met so timing never blocks the DRC/LVS we actually want here.
+CLOCK_PORT: c1
+CLOCK_PERIOD: 10
+
+# Floorplan: ~match the hand-hardened 278 um, with margin + room for taps/fill.
+FP_SIZING: absolute
+DIE_AREA: [0, 0, 300, 300]
+CORE_AREA: [10, 10, 290, 290]
+PL_TARGET_DENSITY_PCT: 45
+
+# c2/result/a/b drive the adder in-chip; here they are macro I/O.
+# Overfix hold like the template does.
+PL_RESIZER_HOLD_SLACK_MARGIN: 0.35
+GRT_RESIZER_HOLD_SLACK_MARGIN: 0.3
+
+# Do not error on Magic DRC (KLayout DRC is the gate); keep it visible though.
+ERROR_ON_MAGIC_DRC: false

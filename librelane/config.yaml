@@ -21,7 +21,10 @@ meta:
 
     # Save time during development
     # Enable for sign-off
-    #OpenROAD.IRDropReport: null
+    # Phase A (TPL-3): IR-drop hangs in post-processing on the full 1x1 die
+    # (VSRC_LOC_FILES unset; not needed to prove macro-integration mechanics).
+    # Disabled here for Phase A — RE-ENABLE for sign-off. DRC/LVS stay ON.
+    OpenROAD.IRDropReport: null
     #Magic.DRC: null
     #Checker.MagicDRC: null
     #KLayout.XOR: null
@@ -60,6 +63,12 @@ IGNORE_DISCONNECTED_MODULES:
 - gf180mcu_ws_ip__project_id
 - gf180mcu_ws_ip__logo
 - gf180mcu_ws_ip__marker
+# LSDL benchmark macros: their interface .libs have no timing arcs, and some
+# outputs are intentionally unused (e.g. lsdl_adder64.coutn), so the
+# disconnected-pins checker must treat them as macros, not flag floating pins.
+- adder_tester
+- lsdl_adder64
+- cmos_adder64
 
 # Clock
 CLOCK_PORT: clk_PAD
@@ -141,6 +150,13 @@ MAGIC_GDS_FLATGLOB:
 - "xdec16_*"
 - "xdec32_*"
 - "sa_*"
+# LSDL macro leaf cells: flatten so Magic merges abutting NPLUS/PPLUS/COMP/NWELL
+# across cell seams. Standalone each cell is Magic-clean, but tiled in rows the
+# cell-boundary polygon separation makes Magic's deck report ~10^6 false seam
+# markers (DF.3a/DF.8/DF.1a/DF.9/PL.5a) — which KLayout's official deck does NOT
+# flag and which the precheck treats as non-gating (ERROR_ON_MAGIC_DRC: False).
+# Flattening removes the artifacts and keeps the Magic.DRC step fast.
+- "lsdl_*"
 
 # Since we cannot meet the minimum density limit on Metal2,
 # ignore active metal on previous and subsequent layers

@@ -1,0 +1,3 @@
+# Git LFS — binary layout + large frozen records kept out of the git object
+# store. Applies to exported macro views (ip/**/*.gds), frozen block signoff
+# records (signoff/*.gds, signoff/*.def — the fabrication record), and docs.

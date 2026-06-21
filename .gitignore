@@ -7,3 +7,16 @@ final/
 img/
 *.lyrdb
 generated_defines.svh
+
+# ── LSDL tapeout additions ──────────────────────────────────────────────
+**/views/                  # LibreLane per-block run output (macro views are exported to ip/)
+*.vvp
+*.vcd
+a.out
+blocks/**/pnr/*.def        # PnR intermediates (frozen records live in signoff/, LFS)
+blocks/**/pnr/*.odb
+blocks/**/pnr/*.gds
+blocks/**/pnr/*.gds.keep
+blocks/**/pnr/*.guide
+blocks/**/pnr/*.rpt
+blocks/**/pnr/*.log

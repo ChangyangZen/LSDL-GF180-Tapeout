@@ -1,0 +1,28 @@
+# LibreLane Classic hardening of cmos_adder64 (matched-architecture CMOS 64-bit
+# adder, 4224 stock gf180mcu_fd_sc_mcu9t5v0 cells: addf_1 + dffq_1). Stock cells
+# => harden at 9T (same recipe as adder_tester). Run:
+#   librelane blocks/cmos_adder64/config.yaml --pdk gf180mcuD \
+#     --pdk-root /workspace/gf180mcu --manual-pdk --scl gf180mcu_fd_sc_mcu9t5v0 \
+#     --save-views-to /design/blocks/cmos_adder64/views
+DESIGN_NAME: cmos_adder64
+VERILOG_FILES:
+- dir::src/adder64_cmos.v
+PRIMARY_GDSII_STREAMOUT_TOOL: klayout
+# Fixed small I/O delays (macro I/O are internal chip nets); avoids the default
+# 0.2*period I/O delay that scaled the 65 I/O-boundary setup paths with the clock.
+PNR_SDC_FILE: dir::base.sdc
+SIGNOFF_SDC_FILE: dir::base.sdc
+FALLBACK_SDC_FILE: dir::base.sdc
+# Relaxed clock: a clean macro GDS is the goal, not f_max (validated separately
+# in the hand flow at 500 MHz). At 4 ns the WNS was only -0.755 ns (operand
+# broadcast shift registers); 10 ns gives ~+5 ns setup margin. Hold margins
+# dropped to LibreLane defaults — the 0.35 ns margin (copied from the chip
+# config, which needs it for pad delays) over-constrained 4118 short flop->flop
+# shift-register paths; the hand flow closed hold with default margins.
+CLOCK_PORT: clk
+CLOCK_PERIOD: 10
+FP_SIZING: absolute
+DIE_AREA: [0, 0, 850, 850]
+CORE_AREA: [15, 15, 835, 835]
+PL_TARGET_DENSITY_PCT: 50
+ERROR_ON_MAGIC_DRC: false

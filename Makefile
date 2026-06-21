@@ -133,3 +133,16 @@ sim-gl: clone-pdk defines ## Run gate-level simulation with cocotb (after copy-f
 sim-view: ## View simulation waveforms in GTKWave
 	gtkwave cocotb/sim_build/chip_top.fst
 .PHONY: sim-view
+
+# ── LSDL cell-library submodule + macro-view export ─────────────────────
+submodule: ## Init/update the pinned LSDL cell-library submodule (lib/lsdl-fd-sc-gf180)
+	git submodule update --init --recursive
+.PHONY: submodule
+
+views: submodule ## Export each block's 4 macro views (gds/lef/lib/vh) into ip/<macro>/
+	@echo ">> Export macro views from each hardened block's routed DEF into ip/<macro>/."
+	@echo ">> Requires the IIC-OSIC-TOOLS container + a routed DEF (run the block PnR first):"
+	@echo ">>   blocks/<b>/pnr/run_pnr.tcl -> def2gds.py (GDS) + gen_abstract.tcl (LEF)"
+	@echo ">>   + gen_liberty.py from lib/lsdl-fd-sc-gf180 (lib) + blackbox .vh"
+	@echo ">> (block PnR scripts currently use absolute paths -> repo-relative refactor TODO)"
+.PHONY: views

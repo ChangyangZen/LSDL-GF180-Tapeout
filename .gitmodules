@@ -1,0 +1,4 @@
+[submodule "lib/lsdl-fd-sc-gf180"]
+	path = lib/lsdl-fd-sc-gf180
+	url = https://github.com/ChangyangZen/LSDL-Standard-Cell-Library.git
+	branch = main
