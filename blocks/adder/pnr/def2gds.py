@@ -125,20 +125,21 @@ def heal_implants(ly: pya.Layout, top_name: str) -> None:
     np_h = debite(np_r) - pp_r
     pp_h = debite(pp_r) - np_r
 
-    # Five 0.14-um-wide PPLUS fingers survive the bite+opening pass —
-    # artifacts of THIS placement's tap stagger (PP.1 markers, run
-    # bkt55y89f). They sit over tap P+ COMP, so they cannot be cut
-    # (PP.5/DF.12 enclosure) — WIDEN them instead by adding implant.
-    # Placement-specific list; regenerate if the DEF changes (TODO L5
-    # follow-up: fix at the tap-cell geometry level instead).
-    necks = [(791.77, 1472.24), (840.07, 1521.52), (791.35, 1201.2),
-             (669.27, 1349.04), (25.76, 55.44)]
-    patches = pya.Region()
-    h = int(0.55 / ly.dbu)   # 0.45 left a 0.04 slot to a neighbor edge
-    for x, y in necks:
-        cx, cy = int(x / ly.dbu), int(y / ly.dbu)
-        patches.insert(pya.Box(cx - h, cy - h, cx + h, cy + h))
-    pp_h = (pp_h + patches).merged() - np_r
+    # Thin PPLUS features that survived the bite+opening pass are placement-
+    # specific artifacts (tap-stagger corner slivers, 0.38-0.40 um).  Auto-
+    # detect them (erode by 0.2 um — anything < 0.4 um disappears) and widen
+    # each locally to >= 0.44 um.  Replaces the old hardcoded neck-coordinate
+    # list (valid only for one placement; stale on reharden/0.5x1).
+    o2 = int(0.20 / ly.dbu)
+    eroded = pp_h.sized(-o2).sized(o2)      # morph. opening: keeps >=0.4um
+    thin = pp_h - eroded                      # what the opening removes (< 0.4um)
+    if not thin.is_empty():
+        # widen each thin fragment to a legal stem (0.44 um → 0.22 radius)
+        patches = thin.sized(int(0.22 / ly.dbu))
+        pp_h = (pp_h + patches).merged()
+        print(f'  auto-widened {thin.size()} thin PPLUS slivers')
+    else:
+        patches = pya.Region()
     for c in ly.each_cell():
         c.shapes(li_np).clear()
         c.shapes(li_pp).clear()
